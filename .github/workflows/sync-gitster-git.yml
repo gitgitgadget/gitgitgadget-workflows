@@ -18,19 +18,36 @@ jobs:
         id: check
         with:
           script: |
+            const sleep = async (milliseconds) => {
+              return new Promise(resolve => setTimeout(resolve, milliseconds))
+            }
+
             const getRefs = async (repository) => {
-              const [owner, repo] = repository.split('/')
-              const { data } = await github.rest.git.listMatchingRefs({
-                owner,
-                repo,
-                // We want to match `maint-*` as well as `[a-z][a-z]/*`
-                // sadly, this is not possible via GitHub's REST API,
-                // hence we do it below via the `filter()` call.
-                ref: 'heads/'
-              })
-              return data
-                .filter(e => e.ref.match(/^refs\/heads\/(maint-\d|[a-z][a-z]\/)/))
-                .sort((a, b) => a.ref.localeCompare(b.ref))
+              let attemptCounter = 1
+              for (;;) {
+                try {
+                  const [owner, repo] = repository.split('/')
+                  const { data } = await github.rest.git.listMatchingRefs({
+                    owner,
+                    repo,
+                    // We want to match `maint-*` as well as `[a-z][a-z]/*`
+                    // sadly, this is not possible via GitHub's REST API,
+                    // hence we do it below via the `filter()` call.
+                    ref: 'heads/'
+                  })
+                  return data
+                    .filter(e => e.ref.match(/^refs\/heads\/(maint-\d|[a-z][a-z]\/)/))
+                    .sort((a, b) => a.ref.localeCompare(b.ref))
+                } catch (e) {
+                  if (e?.status !== 502) throw e
+                }
+
+                if (++attemptCounter > 10) throw new Error('Giving up listing refs after 10 attempts')
+
+                const seconds = attemptCounter * attemptCounter + 15 * Math.random()
+                core.info(`Encountered a Server Error; retrying in ${seconds} seconds`)
+                await sleep(1000 * seconds)
+              }
             }
 
             const sourceRefs = await getRefs(process.env.SOURCE_REPOSITORY)
