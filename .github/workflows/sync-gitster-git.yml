@@ -9,6 +9,12 @@ env:
   SOURCE_REPOSITORY: gitster/git
   TARGET_REPOSITORY: gitgitgadget/git
 
+# We want to limit queuing to a single workflow run i.e. if there is already
+# an active workflow run and a queued one, queue another one canceling the
+# already queued one.
+concurrency:
+  group: ${{ github.workflow }}
+
 jobs:
   sync-gitster-git-branches:
     runs-on: ubuntu-latest
