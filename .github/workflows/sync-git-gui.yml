@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: check which refs need to be synchronized
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         id: check
         with:
           script: |
@@ -117,7 +117,7 @@ jobs:
           repository: ${{ env.TARGET_REPOSITORY }}
       - name: set authorization header
         if: steps.check.outputs.refspec != ''
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         id: auth
         with:
           script: |
