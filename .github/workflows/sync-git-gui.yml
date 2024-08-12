@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  SOURCE_REPOSITORY: prati0100/git-gui
+  SOURCE_REPOSITORY: j6t/git-gui
   TARGET_REPOSITORY: gitgitgadget/git
   TARGET_REF_NAMESPACE: git-gui/
 
