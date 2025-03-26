@@ -24,6 +24,10 @@ jobs:
         id: check
         with:
           script: |
+            const [targetRepoOwner, targetRepoName] = process.env.TARGET_REPOSITORY.split('/')
+            core.setOutput('target-repo-owner', targetRepoOwner)
+            core.setOutput('target-repo-name', targetRepoName)
+
             const sleep = async (milliseconds) => {
               return new Promise(resolve => setTimeout(resolve, milliseconds))
             }
@@ -95,12 +99,13 @@ jobs:
             core.setOutput('to-fetch', [...toFetch].join(' '))
       - name: obtain installation token
         if: steps.check.outputs.refspec != ''
-        uses: tibdex/github-app-token@b62528385c34dbc9f38e5f4225ac829252d1ea92
+        uses: actions/create-github-app-token@v1
         id: token
         with:
-          app_id: ${{ secrets.GITGITGADGET_GITHUB_APP_ID }}
-          private_key: ${{ secrets.GITGITGADGET_GITHUB_APP_PRIVATE_KEY }}
-          repository: ${{ env.TARGET_REPOSITORY }}
+          app-id: ${{ secrets.GITGITGADGET_GITHUB_APP_ID }}
+          private-key: ${{ secrets.GITGITGADGET_GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ steps.check.outputs.target-repo-owner }}
+          repositories: ${{ steps.check.outputs.target-repo-name }}
       - name: set authorization header
         if: steps.check.outputs.refspec != ''
         uses: actions/github-script@v7
