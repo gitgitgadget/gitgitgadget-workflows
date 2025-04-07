@@ -64,7 +64,7 @@ jobs:
             core.setOutput('target-sha', targetSHA || '')
       - name: obtain installation token
         if: steps.check.outputs.skip == 'false'
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v2
         id: token
         with:
           app-id: ${{ secrets.GITGITGADGET_GITHUB_APP_ID }}
