@@ -24,6 +24,8 @@ jobs:
       id: needs-update
       run: |
         set -x
+        echo "org=${TARGET_GITHUB_REPOSITORY%%/*}" >>$GITHUB_OUTPUT &&
+        echo "repo=${TARGET_GITHUB_REPOSITORY#*/}" >>$GITHUB_OUTPUT &&
         source="$(git ls-remote "$SOURCE_REPOSITORY" master)" &&
         target="$(git ls-remote https://github.com/"$TARGET_GITHUB_REPOSITORY" lore-$LORE_EPOCH)" &&
         echo "result=$(test "${source%%	*}" = "${target%%	*}" && echo false || echo true)" >>$GITHUB_OUTPUT
@@ -35,9 +37,18 @@ jobs:
       if: steps.needs-update.outputs.result == 'true'
       run: |
         git fetch "$SOURCE_REPOSITORY" refs/heads/master:refs/heads/lore-$LORE_EPOCH
+    - name: obtain installation token
+      if: steps.needs-update.outputs.result == 'true'
+      uses: actions/create-github-app-token@v2
+      id: token
+      with:
+        app-id: ${{ secrets.GITGITGADGET_GITHUB_APP_ID }}
+        private-key: ${{ secrets.GITGITGADGET_GITHUB_APP_PRIVATE_KEY }}
+        owner: ${{ steps.needs-update.outputs.org }}
+        repositories: ${{ steps.needs-update.outputs.repo }}
     - name: Push to mirror
       if: steps.needs-update.outputs.result == 'true'
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ steps.token.outputs.token }}
       run: |
         git push https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$TARGET_GITHUB_REPOSITORY lore-$LORE_EPOCH
