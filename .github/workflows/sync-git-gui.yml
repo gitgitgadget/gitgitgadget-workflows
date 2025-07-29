@@ -113,7 +113,7 @@ jobs:
             core.setOutput('to-fetch', [...toFetch].join(' '))
       - name: obtain installation token
         if: steps.check.outputs.refspec != ''
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v2
         id: token
         with:
           app-id: ${{ secrets.GITGITGADGET_GITHUB_APP_ID }}
