@@ -1,4 +1,4 @@
-name: sync
+name: sync-git-mailing-list-mirror
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ env:
 concurrency: sync
 
 jobs:
-  repo-sync:
+  sync-git-mailing-list-mirror:
     runs-on: ubuntu-latest
     permissions:
       contents: write
