@@ -8,7 +8,9 @@ on:
 env:
   LORE_EPOCH: 1
 
-concurrency: sync
+concurrency:
+  group: sync-git-mailing-list-mirror
+  cancel-in-progress: true
 
 jobs:
   sync-git-mailing-list-mirror:
