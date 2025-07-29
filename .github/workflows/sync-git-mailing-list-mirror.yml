@@ -20,13 +20,23 @@ jobs:
     permissions:
       contents: write
     steps:
+    - name: check if update is needed
+      id: needs-update
+      run: |
+        set -x
+        source="$(git ls-remote "$SOURCE_REPOSITORY" master)" &&
+        target="$(git ls-remote https://github.com/"$TARGET_GITHUB_REPOSITORY" lore-$LORE_EPOCH)" &&
+        echo "result=$(test "${source%%	*}" = "${target%%	*}" && echo false || echo true)" >>$GITHUB_OUTPUT
     - name: Partial clone
+      if: steps.needs-update.outputs.result == 'true'
       run: |
         git clone --bare --depth=1 -b lore-$LORE_EPOCH --filter=blob:none https://github.com/$TARGET_GITHUB_REPOSITORY .
     - name: Update from lore.kernel.org
+      if: steps.needs-update.outputs.result == 'true'
       run: |
         git fetch "$SOURCE_REPOSITORY" refs/heads/master:refs/heads/lore-$LORE_EPOCH
     - name: Push to mirror
+      if: steps.needs-update.outputs.result == 'true'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
