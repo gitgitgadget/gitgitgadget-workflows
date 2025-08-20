@@ -5,6 +5,9 @@ on:
   # GitGitGadget's GitHub App is expected to trigger this on `seen` updates
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}
+
 jobs:
   update-mail-to-commit-notes:
     runs-on: ubuntu-latest

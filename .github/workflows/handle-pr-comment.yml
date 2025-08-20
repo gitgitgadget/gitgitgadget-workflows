@@ -13,6 +13,9 @@ on:
 env:
   PR_COMMENT_URL: ${{ inputs.pr-comment-url }}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.pr-comment-url }}
+
 jobs:
   handle-pr-comment:
     runs-on: ubuntu-latest

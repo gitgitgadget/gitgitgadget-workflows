@@ -13,6 +13,9 @@ on:
 env:
   PR_URL: ${{ inputs.pr-url }}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.pr-url }}
+
 jobs:
   handle-pr-push:
     runs-on: ubuntu-latest

@@ -4,6 +4,9 @@ on:
   # GitGitGadget's GitHub App is expected to trigger this on `git-mailing-list-mirror` updates
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}
+
 jobs:
   handle-new-mails:
     runs-on: ubuntu-latest
