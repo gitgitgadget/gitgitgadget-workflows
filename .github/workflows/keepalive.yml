@@ -29,14 +29,22 @@ jobs:
           git merge --no-edit FETCH_HEAD &&
           echo "result=merged" >>$GITHUB_OUTPUT
       - name: Create a commit
+        id: commit
         if: steps.merge.outputs.result != 'merged'
         run: |
+          if test 0 -lt $(git rev-list --count --since=3.weeks.ago HEAD)
+          then
+            echo "::notice::No need to keep alive, there were commits in the last three weeks"
+            echo "result=skip-push" >>$GITHUB_OUTPUT
+            exit 0
+          fi &&
           mkdir -p .github/cached
           file='.github/cached/keepalive.txt'
           date >$file
           git add "$file"
           git commit -m "workflow keepalive"
       - name: Push changes
+        if: steps.commit.outputs.result != 'skip-push'
         run: |
           git push origin HEAD </dev/null || {
             for i in 1 2 3 4 5
