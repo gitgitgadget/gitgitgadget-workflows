@@ -17,7 +17,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: 'true'
+      - name: Merge the upstream default branch
+        id: merge
+        if: github.event.repository.fork == true
+        run: |
+          git fetch https://github.com/gitgitgadget/gitgitgadget-workflows HEAD &&
+          if test 0 = $(git rev-list --count HEAD..FETCH_HEAD)
+          then
+            exit 0 # let the next step create a commit
+          fi &&
+          git merge --no-edit FETCH_HEAD &&
+          echo "result=merged" >>$GITHUB_OUTPUT
       - name: Create a commit
+        if: steps.merge.outputs.result != 'merged'
         run: |
           mkdir -p .github/cached
           file='.github/cached/keepalive.txt'
