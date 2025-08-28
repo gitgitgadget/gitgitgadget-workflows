@@ -54,9 +54,11 @@ jobs:
         echo "text=$text" >> $GITHUB_OUTPUT
 
         PR_NUMBER="${PR_URL##*/}" # skip the prefix before the PR number
+        PR_REPO="${PR_URL%/pull/$PR_NUMBER*}" # skip the suffix including the PR number
+        PR_REPO="${PR_REPO#https://*/}"
 
         export GH_TOKEN="${{ secrets.GITHUB_TOKEN }}"
-        eval "$(gh api repos/gitgitgadget/git/pulls/$PR_NUMBER \
+        eval "$(gh api repos/$PR_REPO/pulls/$PR_NUMBER \
           --jq '"head_sha=\(.head.sha) && repo=\(.base.repo.full_name)"')"
         echo "head_sha=$head_sha" >> $GITHUB_OUTPUT
         echo "repo=$repo" >> $GITHUB_OUTPUT
