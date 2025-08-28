@@ -56,8 +56,8 @@ jobs:
 
         PR_NUMBER="${PR_COMMENT_URL%#*}" # skip the suffix with the comment ID
         PR_NUMBER="${PR_NUMBER##*/}" # skip the prefix before the PR number
-        PR_REPO="${PR_COMMENT_URL%/$PR_NUMBER*#*}" # skip the suffix including the PR number
-        PR_REPO="${PR_REPO#https://.*/}"
+        PR_REPO="${PR_COMMENT_URL%/pull/$PR_NUMBER*#*}" # skip the suffix including the PR number
+        PR_REPO="${PR_REPO#https://*/}"
 
         export GH_TOKEN="${{ secrets.GITHUB_TOKEN }}"
         eval "$(gh api repos/$PR_REPO/pulls/$PR_NUMBER \
