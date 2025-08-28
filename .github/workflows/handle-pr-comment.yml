@@ -45,6 +45,7 @@ jobs:
     - name: create a check run
       id: create-check-run
       run: |
+        set -x
         title="Handle PR comment"
         summary="Handling PR comment $PR_COMMENT_URL"
         details_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
