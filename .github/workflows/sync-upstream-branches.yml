@@ -20,6 +20,9 @@ jobs:
           - sourceRepo: j6t/git-gui
             targetRepo: gitgitgadget/git
             targetRefNamespace: git-gui/
+          - sourceRepo: gitster/git
+            targetRepo: gitgitgadget/git
+            sourceRefRegex: "^refs/heads/(maint-\\d|[a-z][a-z]/)"
 
     steps:
       - name: check which refs need to be synchronized
@@ -28,6 +31,7 @@ jobs:
         with:
           script: |
             const sourceRepo = ${{ toJSON(matrix.spec.sourceRepo) }}
+            const sourceRefRegexp = ((p) => p ? new RegExp(p) : null)(${{ toJSON(matrix.spec.sourceRefRegex) }})
             const targetRepo = ${{ toJSON(matrix.spec.targetRepo) }}
             const targetRefNamespace = ${{ toJSON(matrix.spec.targetRefNamespace) }} || ''
 
@@ -48,10 +52,14 @@ jobs:
                     await github.rest.git.listMatchingRefs({
                       owner,
                       repo,
+                      // We cannot match `source-ref-regex` as freely as we
+                      // want with GitHub's REST API, hence we do it below via
+                      // the `filter()` call.
                       ref: 'heads/'
                     })
                   ).data
                     .filter((e) => {
+                      if (sourceRefRegexp && !sourceRefRegexp.test(e.ref)) return false
                       if (!e.ref.startsWith('refs/heads/')) return false
                       e.name = e.ref.slice(11)
                       if (stripRefsPrefix) {
