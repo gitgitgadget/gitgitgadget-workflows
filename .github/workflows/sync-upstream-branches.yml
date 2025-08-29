@@ -44,27 +44,22 @@ jobs:
               for (;;) {
                 try {
                   const [owner, repo] = repository.split('/')
-                  let { data } = await github.rest.git.listMatchingRefs({
-                    owner,
-                    repo,
-                    ref: 'heads/'
-                  })
-
-                  data = data.filter(e => {
-                    if (!e.ref.startsWith('refs/heads/')) return false
-                    e.name = e.ref.slice(11)
-                    return true
-                  })
-
-                  if (stripRefsPrefix) {
-                    data = data.filter(e => {
-                      if (!e.name.startsWith(stripRefsPrefix)) return false
-                      e.name = e.name.slice(stripRefsPrefix.length)
+                  return (
+                    await github.rest.git.listMatchingRefs({
+                      owner,
+                      repo,
+                      ref: 'heads/'
+                    })
+                  ).data
+                    .filter((e) => {
+                      if (!e.ref.startsWith('refs/heads/')) return false
+                      e.name = e.ref.slice(11)
+                      if (stripRefsPrefix) {
+                        if (!e.name.startsWith(stripRefsPrefix)) return false
+                        e.name = e.name.slice(stripRefsPrefix.length)
+                      }
                       return true
                     })
-                  }
-
-                  return data
                     .sort((a, b) => a.ref.localeCompare(b.ref))
                 } catch (e) {
                   if (e?.status !== 502) throw e
