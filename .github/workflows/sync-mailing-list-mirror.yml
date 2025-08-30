@@ -1,4 +1,4 @@
-name: sync-git-mailing-list-mirror
+name: sync-mailing-list-mirror
 
 on:
   workflow_dispatch:
@@ -11,11 +11,11 @@ env:
   TARGET_GITHUB_REPOSITORY: gitgitgadget/git-mailing-list-mirror
 
 concurrency:
-  group: sync-git-mailing-list-mirror
+  group: sync-mailing-list-mirror
   cancel-in-progress: true
 
 jobs:
-  sync-git-mailing-list-mirror:
+  sync-mailing-list-mirror:
     runs-on: ubuntu-latest
     permissions:
       contents: write
