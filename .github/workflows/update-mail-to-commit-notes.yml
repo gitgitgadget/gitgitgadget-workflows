@@ -15,7 +15,7 @@ jobs:
 
     steps:
     - uses: actions/create-github-app-token@v1
-      id: gitgitgadget-git-token
+      id: pr-repo-token
       with:
         app-id: ${{ secrets.GITGITGADGET_GITHUB_APP_ID }}
         private-key: ${{ secrets.GITGITGADGET_GITHUB_APP_PRIVATE_KEY }}
@@ -24,4 +24,4 @@ jobs:
     - uses: gitgitgadget/gitgitgadget/update-mail-to-commit-notes@v1
       with:
         config: ${{ vars.CONFIG }}
-        pr-repo-token: ${{ steps.gitgitgadget-git-token.outputs.token }}
+        pr-repo-token: ${{ steps.pr-repo-token.outputs.token }}

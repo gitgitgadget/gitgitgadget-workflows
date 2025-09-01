@@ -23,21 +23,21 @@ jobs:
 
     steps:
     - uses: actions/create-github-app-token@v1
-      id: gitgitgadget-git-token
+      id: pr-repo-token
       with:
         app-id: ${{ secrets.GITGITGADGET_GITHUB_APP_ID }}
         private-key: ${{ secrets.GITGITGADGET_GITHUB_APP_PRIVATE_KEY }}
         owner: gitgitgadget
         repositories: git
     - uses: actions/create-github-app-token@v1
-      id: git-git-token
+      id: upstream-repo-token
       with:
         app-id: ${{ secrets.GITGITGADGET_GIT_GITHUB_APP_ID }}
         private-key: ${{ secrets.GITGITGADGET_GIT_GITHUB_APP_PRIVATE_KEY }}
         owner: git
         repositories: git
     - uses: actions/create-github-app-token@v1
-      id: dscho-git-token
+      id: test-repo-token
       with:
         app-id: ${{ secrets.GITGITGADGET_GIT_GITHUB_APP_ID }}
         private-key: ${{ secrets.GITGITGADGET_GIT_GITHUB_APP_PRIVATE_KEY }}
@@ -65,9 +65,9 @@ jobs:
         echo "repo=$repo" >> $GITHUB_OUTPUT
 
         export GH_TOKEN="$(case "$repo" in
-          gitgitgadget/git) echo "${{ steps.gitgitgadget-git-token.outputs.token }}";;
-          git/git) echo "${{ steps.git-git-token.outputs.token }}";;
-          dscho/git) echo "${{ steps.dscho-git-token.outputs.token }}";;
+          gitgitgadget/git) echo "${{ steps.pr-repo-token.outputs.token }}";;
+          git/git) echo "${{ steps.upstream-repo-token.outputs.token }}";;
+          dscho/git) echo "${{ steps.test-repo-token.outputs.token }}";;
           *) echo "${{ secrets.GITHUB_TOKEN }}";;
           esac
         )"
@@ -84,17 +84,17 @@ jobs:
     - uses: gitgitgadget/gitgitgadget/handle-pr-push@v1
       with:
         config: ${{ vars.CONFIG }}
-        pr-repo-token: ${{ steps.gitgitgadget-git-token.outputs.token }}
-        upstream-repo-token: ${{ steps.git-git-token.outputs.token }}
-        test-repo-token: ${{ steps.dscho-git-token.outputs.token }}
+        pr-repo-token: ${{ steps.pr-repo-token.outputs.token }}
+        upstream-repo-token: ${{ steps.upstream-repo-token.outputs.token }}
+        test-repo-token: ${{ steps.test-repo-token.outputs.token }}
         pr-url: ${{ env.PR_URL }}
     - name: update the check run
       if: always() && steps.create-check-run.outputs.check_run_id != ''
       run: |
         export GH_TOKEN="$(case "${{ steps.create-check-run.outputs.repo }}" in
-          gitgitgadget/git) echo "${{ steps.gitgitgadget-git-token.outputs.token }}";;
-          git/git) echo "${{ steps.git-git-token.outputs.token }}";;
-          dscho/git) echo "${{ steps.dscho-git-token.outputs.token }}";;
+          gitgitgadget/git) echo "${{ steps.pr-repo-token.outputs.token }}";;
+          git/git) echo "${{ steps.upstream-repo-token.outputs.token }}";;
+          dscho/git) echo "${{ steps.test-repo-token.outputs.token }}";;
           *) echo "${{ secrets.GITHUB_TOKEN }}";;
           esac
         )"
