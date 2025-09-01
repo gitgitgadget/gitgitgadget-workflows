@@ -19,8 +19,8 @@ jobs:
       with:
         app-id: ${{ secrets.GITGITGADGET_GITHUB_APP_ID }}
         private-key: ${{ secrets.GITGITGADGET_GITHUB_APP_PRIVATE_KEY }}
-        owner: gitgitgadget
-        repositories: git
+        owner: ${{ fromJSON(vars.CONFIG).repo.owner }}
+        repositories: ${{ fromJSON(vars.CONFIG).repo.name }}
     - uses: gitgitgadget/gitgitgadget/update-mail-to-commit-notes@v1
       with:
         config: ${{ vars.CONFIG }}

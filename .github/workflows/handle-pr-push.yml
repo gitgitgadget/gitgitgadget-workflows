@@ -27,22 +27,24 @@ jobs:
       with:
         app-id: ${{ secrets.GITGITGADGET_GITHUB_APP_ID }}
         private-key: ${{ secrets.GITGITGADGET_GITHUB_APP_PRIVATE_KEY }}
-        owner: gitgitgadget
-        repositories: git
+        owner: ${{ fromJSON(vars.CONFIG).repo.owner }}
+        repositories: ${{ fromJSON(vars.CONFIG).repo.name }}
     - uses: actions/create-github-app-token@v1
+      if: ${{ contains(fromJSON(vars.CONFIG).repo.owners, fromJSON(vars.CONFIG).repo.baseOwner) }}
       id: upstream-repo-token
       with:
         app-id: ${{ secrets.GITGITGADGET_GIT_GITHUB_APP_ID }}
         private-key: ${{ secrets.GITGITGADGET_GIT_GITHUB_APP_PRIVATE_KEY }}
-        owner: git
-        repositories: git
+        owner: ${{ fromJSON(vars.CONFIG).repo.baseOwner }}
+        repositories: ${{ fromJSON(vars.CONFIG).repo.name }}
     - uses: actions/create-github-app-token@v1
+      if: ${{ contains(fromJSON(vars.CONFIG).repo.owners, fromJSON(vars.CONFIG).repo.testOwner) }}
       id: test-repo-token
       with:
         app-id: ${{ secrets.GITGITGADGET_GIT_GITHUB_APP_ID }}
         private-key: ${{ secrets.GITGITGADGET_GIT_GITHUB_APP_PRIVATE_KEY }}
-        owner: dscho
-        repositories: git
+        owner: ${{ fromJSON(vars.CONFIG).repo.testOwner }}
+        repositories: ${{ fromJSON(vars.CONFIG).repo.name }}
     - name: create a check run
       id: create-check-run
       run: |
@@ -65,9 +67,9 @@ jobs:
         echo "repo=$repo" >> $GITHUB_OUTPUT
 
         export GH_TOKEN="$(case "$repo" in
-          gitgitgadget/git) echo "${{ steps.pr-repo-token.outputs.token }}";;
-          git/git) echo "${{ steps.upstream-repo-token.outputs.token }}";;
-          dscho/git) echo "${{ steps.test-repo-token.outputs.token }}";;
+          '${{ fromJSON(vars.CONFIG).repo.owner }}/${{ fromJSON(vars.CONFIG).repo.name }}') echo "${{ steps.pr-repo-token.outputs.token }}";;
+          '${{ fromJSON(vars.CONFIG).repo.baseOwner }}/${{ fromJSON(vars.CONFIG).repo.name }}') echo "${{ steps.upstream-repo-token.outputs.token }}";;
+          '${{ fromJSON(vars.CONFIG).repo.testOwner }}/${{ fromJSON(vars.CONFIG).repo.name }}') echo "${{ steps.test-repo-token.outputs.token }}";;
           *) echo "${{ secrets.GITHUB_TOKEN }}";;
           esac
         )"
@@ -92,9 +94,9 @@ jobs:
       if: always() && steps.create-check-run.outputs.check_run_id != ''
       run: |
         export GH_TOKEN="$(case "${{ steps.create-check-run.outputs.repo }}" in
-          gitgitgadget/git) echo "${{ steps.pr-repo-token.outputs.token }}";;
-          git/git) echo "${{ steps.upstream-repo-token.outputs.token }}";;
-          dscho/git) echo "${{ steps.test-repo-token.outputs.token }}";;
+          '${{ fromJSON(vars.CONFIG).repo.owner }}/${{ fromJSON(vars.CONFIG).repo.name }}') echo "${{ steps.pr-repo-token.outputs.token }}";;
+          '${{ fromJSON(vars.CONFIG).repo.baseOwner }}/${{ fromJSON(vars.CONFIG).repo.name }}') echo "${{ steps.upstream-repo-token.outputs.token }}";;
+          '${{ fromJSON(vars.CONFIG).repo.testOwner }}/${{ fromJSON(vars.CONFIG).repo.name }}') echo "${{ steps.test-repo-token.outputs.token }}";;
           *) echo "${{ secrets.GITHUB_TOKEN }}";;
           esac
         )"
