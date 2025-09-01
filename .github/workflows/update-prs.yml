@@ -10,6 +10,7 @@ concurrency:
 jobs:
   update-prs:
     runs-on: ubuntu-latest
+    if: vars.CONFIG != ''
 
     steps:
     - uses: actions/create-github-app-token@v1
@@ -35,6 +36,7 @@ jobs:
         repositories: git
     - uses: gitgitgadget/gitgitgadget/update-prs@v1
       with:
+        config: ${{ vars.CONFIG }}
         pr-repo-token: ${{ steps.gitgitgadget-git-token.outputs.token }}
         upstream-repo-token: ${{ steps.git-git-token.outputs.token }}
         test-repo-token: ${{ steps.dscho-git-token.outputs.token }}

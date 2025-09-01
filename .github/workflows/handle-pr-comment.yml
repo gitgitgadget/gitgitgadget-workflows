@@ -19,6 +19,7 @@ concurrency:
 jobs:
   handle-pr-comment:
     runs-on: ubuntu-latest
+    if: vars.CONFIG != ''
 
     steps:
     - uses: actions/create-github-app-token@v1
@@ -84,6 +85,7 @@ jobs:
         echo "check_run_id=$check_run_id" >> $GITHUB_OUTPUT
     - uses: gitgitgadget/gitgitgadget/handle-pr-comment@v1
       with:
+        config: ${{ vars.CONFIG }}
         pr-repo-token: ${{ steps.gitgitgadget-git-token.outputs.token }}
         upstream-repo-token: ${{ steps.git-git-token.outputs.token }}
         test-repo-token: ${{ steps.dscho-git-token.outputs.token }}
