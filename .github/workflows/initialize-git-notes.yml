@@ -1,0 +1,25 @@
+name: Initialize Git notes
+
+# This workflow is expected to be triggered manually, exactly once, when
+# GitGitGadget is first used with a new `pr-repo`.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  initialize-git-notes:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/create-github-app-token@v1
+      id: pr-repo-token
+      with:
+        app-id: ${{ secrets.GITGITGADGET_GITHUB_APP_ID }}
+        private-key: ${{ secrets.GITGITGADGET_GITHUB_APP_PRIVATE_KEY }}
+        owner: ${{ fromJSON(vars.CONFIG).repo.owner }}
+        repositories: ${{ fromJSON(vars.CONFIG).repo.name }}
+    - uses: gitgitgadget/gitgitgadget/initialize-git-notes@v1
+      with:
+        config: ${{ vars.CONFIG }}
+        pr-repo-token: ${{ steps.pr-repo-token.outputs.token }}
+        initial-user: ${{ github.actor }}
