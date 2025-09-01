@@ -91,8 +91,8 @@ jobs:
         pr-repo-token: ${{ steps.pr-repo-token.outputs.token }}
         upstream-repo-token: ${{ steps.upstream-repo-token.outputs.token }}
         test-repo-token: ${{ steps.test-repo-token.outputs.token }}
-        smtp-host: smtp.gmail.com
-        smtp-user: gitgitgadget@gmail.com
+        smtp-host: '${{ fromJSON(vars.CONFIG).mail.smtpHost }}'
+        smtp-user: '${{ fromJSON(vars.CONFIG).mail.smtpUser }}'
         smtp-pass: "${{ secrets.GITGITGADGET_SMTP_PASS }}"
         pr-comment-url: ${{ env.PR_COMMENT_URL }}
     - name: update the check run
