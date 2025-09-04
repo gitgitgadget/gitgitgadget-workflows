@@ -21,6 +21,7 @@ jobs:
         id: merge
         if: github.event.repository.fork == true
         run: |
+          git fetch --unshallow origin &&
           git fetch https://github.com/gitgitgadget/gitgitgadget-workflows HEAD &&
           if test 0 = $(git rev-list --count HEAD..FETCH_HEAD)
           then
