@@ -1,17 +1,14 @@
-name: Update Mail to Commit Notes
-run-name: Update the `mail-to-commit` and `commit-to-mail` Git notes
+name: Initialize Git notes
+
+# This workflow is expected to be triggered manually, exactly once, when
+# GitGitGadget is first used with a new `pr-repo`.
 
 on:
-  # GitGitGadget's GitHub App is expected to trigger this on `seen` updates
   workflow_dispatch:
 
-concurrency:
-  group: ${{ github.workflow }}
-
 jobs:
-  update-mail-to-commit-notes:
+  initialize-git-notes:
     runs-on: ubuntu-latest
-    if: vars.CONFIG != ''
 
     steps:
     - uses: actions/create-github-app-token@v1
@@ -21,7 +18,8 @@ jobs:
         private-key: ${{ secrets.GITGITGADGET_GITHUB_APP_PRIVATE_KEY }}
         owner: ${{ fromJSON(vars.CONFIG).repo.owner }}
         repositories: ${{ fromJSON(vars.CONFIG).repo.name }}
-    - uses: gitgitgadget/gitgitgadget/update-mail-to-commit-notes@v1
+    - uses: gitgitgadget/gitgitgadget/initialize-git-notes@v1
       with:
         config: ${{ vars.CONFIG }}
         pr-repo-token: ${{ steps.pr-repo-token.outputs.token }}
+        initial-user: ${{ github.actor }}
