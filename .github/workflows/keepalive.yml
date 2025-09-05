@@ -21,6 +21,7 @@ jobs:
         id: merge
         if: github.event.repository.fork == true
         run: |
+          git fetch --unshallow origin &&
           git fetch https://github.com/gitgitgadget/gitgitgadget-workflows HEAD &&
           if test 0 = $(git rev-list --count HEAD..FETCH_HEAD)
           then
@@ -32,7 +33,8 @@ jobs:
         id: commit
         if: steps.merge.outputs.result != 'merged'
         run: |
-          if test 0 -lt $(git rev-list --count --since=3.weeks.ago HEAD)
+          if test workflow_dispatch != '${{ github.event_name }}' &&
+            test 0 -lt $(git rev-list --count --since=3.weeks.ago HEAD)
           then
             echo "::notice::No need to keep alive, there were commits in the last three weeks"
             echo "result=skip-push" >>$GITHUB_OUTPUT
