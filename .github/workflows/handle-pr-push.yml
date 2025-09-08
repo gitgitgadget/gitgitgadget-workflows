@@ -19,29 +19,32 @@ concurrency:
 jobs:
   handle-pr-push:
     runs-on: ubuntu-latest
+    if: vars.CONFIG != ''
 
     steps:
     - uses: actions/create-github-app-token@v1
-      id: gitgitgadget-git-token
+      id: pr-repo-token
       with:
         app-id: ${{ secrets.GITGITGADGET_GITHUB_APP_ID }}
         private-key: ${{ secrets.GITGITGADGET_GITHUB_APP_PRIVATE_KEY }}
-        owner: gitgitgadget
-        repositories: git
+        owner: ${{ fromJSON(vars.CONFIG).repo.owner }}
+        repositories: ${{ fromJSON(vars.CONFIG).repo.name }}
     - uses: actions/create-github-app-token@v1
-      id: git-git-token
+      if: ${{ contains(fromJSON(vars.CONFIG).repo.owners, fromJSON(vars.CONFIG).repo.baseOwner) }}
+      id: upstream-repo-token
       with:
         app-id: ${{ secrets.GITGITGADGET_GIT_GITHUB_APP_ID }}
         private-key: ${{ secrets.GITGITGADGET_GIT_GITHUB_APP_PRIVATE_KEY }}
-        owner: git
-        repositories: git
+        owner: ${{ fromJSON(vars.CONFIG).repo.baseOwner }}
+        repositories: ${{ fromJSON(vars.CONFIG).repo.name }}
     - uses: actions/create-github-app-token@v1
-      id: dscho-git-token
+      if: ${{ contains(fromJSON(vars.CONFIG).repo.owners, fromJSON(vars.CONFIG).repo.testOwner) }}
+      id: test-repo-token
       with:
         app-id: ${{ secrets.GITGITGADGET_GIT_GITHUB_APP_ID }}
         private-key: ${{ secrets.GITGITGADGET_GIT_GITHUB_APP_PRIVATE_KEY }}
-        owner: dscho
-        repositories: git
+        owner: ${{ fromJSON(vars.CONFIG).repo.testOwner }}
+        repositories: ${{ fromJSON(vars.CONFIG).repo.name }}
     - name: create a check run
       id: create-check-run
       run: |
@@ -64,9 +67,9 @@ jobs:
         echo "repo=$repo" >> $GITHUB_OUTPUT
 
         export GH_TOKEN="$(case "$repo" in
-          gitgitgadget/git) echo "${{ steps.gitgitgadget-git-token.outputs.token }}";;
-          git/git) echo "${{ steps.git-git-token.outputs.token }}";;
-          dscho/git) echo "${{ steps.dscho-git-token.outputs.token }}";;
+          '${{ fromJSON(vars.CONFIG).repo.owner }}/${{ fromJSON(vars.CONFIG).repo.name }}') echo "${{ steps.pr-repo-token.outputs.token }}";;
+          '${{ fromJSON(vars.CONFIG).repo.baseOwner }}/${{ fromJSON(vars.CONFIG).repo.name }}') echo "${{ steps.upstream-repo-token.outputs.token }}";;
+          '${{ fromJSON(vars.CONFIG).repo.testOwner }}/${{ fromJSON(vars.CONFIG).repo.name }}') echo "${{ steps.test-repo-token.outputs.token }}";;
           *) echo "${{ secrets.GITHUB_TOKEN }}";;
           esac
         )"
@@ -82,17 +85,18 @@ jobs:
         echo "check_run_id=$check_run_id" >> $GITHUB_OUTPUT
     - uses: gitgitgadget/gitgitgadget/handle-pr-push@v1
       with:
-        pr-repo-token: ${{ steps.gitgitgadget-git-token.outputs.token }}
-        upstream-repo-token: ${{ steps.git-git-token.outputs.token }}
-        test-repo-token: ${{ steps.dscho-git-token.outputs.token }}
+        config: ${{ vars.CONFIG }}
+        pr-repo-token: ${{ steps.pr-repo-token.outputs.token }}
+        upstream-repo-token: ${{ steps.upstream-repo-token.outputs.token }}
+        test-repo-token: ${{ steps.test-repo-token.outputs.token }}
         pr-url: ${{ env.PR_URL }}
     - name: update the check run
       if: always() && steps.create-check-run.outputs.check_run_id != ''
       run: |
         export GH_TOKEN="$(case "${{ steps.create-check-run.outputs.repo }}" in
-          gitgitgadget/git) echo "${{ steps.gitgitgadget-git-token.outputs.token }}";;
-          git/git) echo "${{ steps.git-git-token.outputs.token }}";;
-          dscho/git) echo "${{ steps.dscho-git-token.outputs.token }}";;
+          '${{ fromJSON(vars.CONFIG).repo.owner }}/${{ fromJSON(vars.CONFIG).repo.name }}') echo "${{ steps.pr-repo-token.outputs.token }}";;
+          '${{ fromJSON(vars.CONFIG).repo.baseOwner }}/${{ fromJSON(vars.CONFIG).repo.name }}') echo "${{ steps.upstream-repo-token.outputs.token }}";;
+          '${{ fromJSON(vars.CONFIG).repo.testOwner }}/${{ fromJSON(vars.CONFIG).repo.name }}') echo "${{ steps.test-repo-token.outputs.token }}";;
           *) echo "${{ secrets.GITHUB_TOKEN }}";;
           esac
         )"

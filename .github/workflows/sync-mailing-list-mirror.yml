@@ -6,9 +6,9 @@ on:
     - cron:  "*/5 * * * *"
 
 env:
-  LORE_EPOCH: 1 # also adjust SOURCE_REPOSITORY
-  SOURCE_REPOSITORY: https://lore.kernel.org/git/1 # LORE_EPOCH
-  TARGET_GITHUB_REPOSITORY: gitgitgadget/git-mailing-list-mirror
+  MIRROR_REF: ${{ fromJSON(vars.CONFIG).mailrepo.mirrorRef }}
+  SOURCE_REPOSITORY: ${{ fromJSON(vars.CONFIG).mailrepo.url }}${{ fromJSON(vars.CONFIG).mailrepo.public_inbox_epoch }}
+  TARGET_GITHUB_REPOSITORY: ${{ fromJSON(vars.CONFIG).mailrepo.owner }}/${{ fromJSON(vars.CONFIG).mailrepo.name }}
 
 concurrency:
   group: sync-mailing-list-mirror
@@ -27,16 +27,16 @@ jobs:
         echo "org=${TARGET_GITHUB_REPOSITORY%%/*}" >>$GITHUB_OUTPUT &&
         echo "repo=${TARGET_GITHUB_REPOSITORY#*/}" >>$GITHUB_OUTPUT &&
         source="$(git ls-remote "$SOURCE_REPOSITORY" master)" &&
-        target="$(git ls-remote https://github.com/"$TARGET_GITHUB_REPOSITORY" lore-$LORE_EPOCH)" &&
+        target="$(git ls-remote https://github.com/"$TARGET_GITHUB_REPOSITORY" "$MIRROR_REF")" &&
         echo "result=$(test "${source%%	*}" = "${target%%	*}" && echo false || echo true)" >>$GITHUB_OUTPUT
     - name: Partial clone
       if: steps.needs-update.outputs.result == 'true'
       run: |
-        git clone --bare --depth=1 -b lore-$LORE_EPOCH --filter=blob:none https://github.com/$TARGET_GITHUB_REPOSITORY .
+        git clone --bare --depth=1 -b "${MIRROR_REF#refs/heads/}" --filter=blob:none https://github.com/$TARGET_GITHUB_REPOSITORY .
     - name: Update from lore.kernel.org
       if: steps.needs-update.outputs.result == 'true'
       run: |
-        git fetch "$SOURCE_REPOSITORY" refs/heads/master:refs/heads/lore-$LORE_EPOCH
+        git fetch "$SOURCE_REPOSITORY" refs/heads/master:"$MIRROR_REF"
     - name: obtain installation token
       if: steps.needs-update.outputs.result == 'true'
       uses: actions/create-github-app-token@v2
@@ -51,4 +51,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ steps.token.outputs.token }}
       run: |
-        git push https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$TARGET_GITHUB_REPOSITORY lore-$LORE_EPOCH
+        git push https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$TARGET_GITHUB_REPOSITORY "$MIRROR_REF"

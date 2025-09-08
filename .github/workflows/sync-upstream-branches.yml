@@ -16,13 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        spec:
-          - sourceRepo: j6t/git-gui
-            targetRepo: gitgitgadget/git
-            targetRefNamespace: git-gui/
-          - sourceRepo: gitster/git
-            targetRepo: gitgitgadget/git
-            sourceRefRegex: "^refs/heads/(maint-\\d|[a-z][a-z]/)"
+        spec: ${{ fromJSON(vars.CONFIG).syncUpstreamBranches }}
 
     steps:
       - name: check which refs need to be synchronized
