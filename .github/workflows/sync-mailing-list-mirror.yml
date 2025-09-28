@@ -51,4 +51,19 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ steps.token.outputs.token }}
       run: |
-        git push https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$TARGET_GITHUB_REPOSITORY lore-$LORE_EPOCH
+        backoff=0
+        while (
+          git push https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$TARGET_GITHUB_REPOSITORY lore-$LORE_EPOCH;
+          echo $? >exit.code
+        ) 2>&1 | tee output.log; exit_code="$(cat exit.code)"; test 0 != "$exit_code" && grep 403 output.log
+        do
+          backoff=$(($backoff+1))
+          test 10 -gt $backoff || {
+            echo '::error::Failed too many times' >&2
+            exit $exit_code
+          }
+          printf '::warning::access token somehow not yet active; sleeping for %d seconds\nexit code: %s\n' \
+            $backoff $(cat exit.code)
+          sleep $backoff
+        done
+        exit $exit_code
