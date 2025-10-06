@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: check whether the ref is in sync
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: check
         with:
           script: |
@@ -73,7 +73,7 @@ jobs:
           repositories: ${{ steps.check.outputs.target-repo-name }}
       - name: set authorization header
         if: steps.check.outputs.skip == 'false'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: auth
         with:
           script: |
