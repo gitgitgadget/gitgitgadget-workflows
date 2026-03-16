@@ -43,7 +43,7 @@ jobs:
         git fetch "$SOURCE_REPOSITORY" refs/heads/master:refs/heads/lore-$LORE_EPOCH
     - name: obtain installation token
       if: steps.needs-update.outputs.result == 'true'
-      uses: actions/create-github-app-token@v2
+      uses: actions/create-github-app-token@v3
       id: token
       with:
         app-id: ${{ secrets.GITGITGADGET_GITHUB_APP_ID }}
