@@ -1,5 +1,5 @@
 name: Handle a PR comment
-run-name: Handle slash command in a PR comment`
+run-name: Handle slash command in a PR comment
 
 on:
   # GitGitGadget's GitHub App is expected to trigger this on `issue_comment` events
